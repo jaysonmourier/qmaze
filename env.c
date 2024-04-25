@@ -128,7 +128,6 @@ void step(struct Env *env, enum ACTION action, int *obs, int *terminated, int *r
                 *terminated = 1, *reward = 1;
         }
 
-        *obs = env->playerY + env->playerX * env->cols;
         break;
     case RIGHT:
         if (_isValidAction(env, x, y + 1))
@@ -138,7 +137,6 @@ void step(struct Env *env, enum ACTION action, int *obs, int *terminated, int *r
                 *terminated = 1, *reward = 1;
         }
 
-        *obs = env->playerY + env->playerX * env->cols;
         break;
     case DOWN:
         if (_isValidAction(env, x + 1, y))
@@ -148,7 +146,6 @@ void step(struct Env *env, enum ACTION action, int *obs, int *terminated, int *r
                 *terminated = 1, *reward = 1;
         }
 
-        *obs = env->playerY + env->playerX * env->cols;
         break;
     case LEFT:
         if (_isValidAction(env, x, y - 1))
@@ -158,9 +155,10 @@ void step(struct Env *env, enum ACTION action, int *obs, int *terminated, int *r
                 *terminated = 1, *reward = 1;
         }
 
-        *obs = env->playerY + env->playerX * env->cols;
         break;
     default:
         break;
     }
+
+    *obs = env->playerY + env->playerX * env->cols;
 }
