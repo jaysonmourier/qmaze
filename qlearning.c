@@ -73,7 +73,7 @@ float get_max_state_value(struct QTable *qtable, int state)
     return best_value;
 }
 
-float get_best_action(struct QTable *qtable, int state)
+int get_best_action(struct QTable *qtable, int state)
 {
     if (qtable == NULL)
         return -999;
