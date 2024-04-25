@@ -7,6 +7,10 @@ static void _updatePlayerPosition(struct Env *env, int newX, int newY)
     if (env == NULL)
         return;
 
+    if((newX < 0) || (newX >= env->cols) ||
+    (newY < 0) || (newY >= env->rows)
+    ) return;
+
     env->data[env->playerY + env->playerX * env->cols] = 0;
     env->data[newY + newX * env->cols] = 1;
     env->playerX = newX;
@@ -127,7 +131,6 @@ void step(struct Env *env, enum ACTION action, int *obs, int *terminated, int *r
             if ((env->playerX == env->exitX) && (env->playerY == env->exitY))
                 *terminated = 1, *reward = 1;
         }
-
         break;
     case RIGHT:
         if (_isValidAction(env, x, y + 1))
@@ -136,7 +139,6 @@ void step(struct Env *env, enum ACTION action, int *obs, int *terminated, int *r
             if ((env->playerX == env->exitX) && (env->playerY == env->exitY))
                 *terminated = 1, *reward = 1;
         }
-
         break;
     case DOWN:
         if (_isValidAction(env, x + 1, y))
@@ -145,7 +147,6 @@ void step(struct Env *env, enum ACTION action, int *obs, int *terminated, int *r
             if ((env->playerX == env->exitX) && (env->playerY == env->exitY))
                 *terminated = 1, *reward = 1;
         }
-
         break;
     case LEFT:
         if (_isValidAction(env, x, y - 1))
@@ -154,7 +155,6 @@ void step(struct Env *env, enum ACTION action, int *obs, int *terminated, int *r
             if ((env->playerX == env->exitX) && (env->playerY == env->exitY))
                 *terminated = 1, *reward = 1;
         }
-
         break;
     default:
         break;
