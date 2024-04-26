@@ -4,13 +4,13 @@
 #include "env.h"
 #include "qlearning.h"
 
-#define ROWS 15
-#define COLS 15
+#define ROWS 10
+#define COLS 10
 #define N_ACTIONS 4
 #define PLAYERX 0
 #define PLAYERY 0
-#define EXITX 8
-#define EXITY 8
+#define EXITX 9
+#define EXITY 9
 
 void play(struct Env *env, struct QTable *qtable, int max_steps)
 {
@@ -34,10 +34,11 @@ void play(struct Env *env, struct QTable *qtable, int max_steps)
     display_env(env);
     putchar('\n');
 
-    if(terminated == 1)
+    if (terminated == 1)
     {
         printf("YOU WON!\n");
-    } else
+    }
+    else
     {
         printf("YOU LOST!\n");
     }
@@ -55,11 +56,20 @@ int main(void)
         return 1;
     }
 
-    struct QTable *qtable = create_qtable(ROWS * COLS, N_ACTIONS);
-    if (qtable == NULL)
+    struct QTable *qa = create_qtable(ROWS * COLS, N_ACTIONS);
+    if (qa == NULL)
     {
         fprintf(stderr, "unable to create qtable...\n");
         destroy_env(env);
+        return 1;
+    }
+
+    struct QTable *qb = create_qtable(ROWS * COLS, N_ACTIONS);
+    if (qb == NULL)
+    {
+        fprintf(stderr, "unable to create qtable...\n");
+        destroy_env(env);
+        destroy_qtable(qa);
         return 1;
     }
 
@@ -72,7 +82,7 @@ int main(void)
     float gamma = 0.9;
     float epsilon = 0.95;
 
-    int epochs = 20000;
+    int epochs = 500;
 
     printf(":::TRAINING\n");
     for (int epoch = 0; epoch < epochs; ++epoch)
@@ -80,13 +90,13 @@ int main(void)
         terminated = 0;
         oldObs = reset_env(env);
 
-        if ((epoch > 0) && (epoch % 1000 == 0))
+        if ((epoch > 0) && (epoch % 50 == 0))
         {
             epsilon = epsilon * 0.95;
             printf("EPSILON => %f\n", epsilon);
         }
 
-        if ((epoch > 0) && (epoch % 500 == 0))
+        if ((epoch > 0) && (epoch % 100 == 0))
         {
             printf("%5d / %5d\n", epoch, epochs);
         }
@@ -95,20 +105,25 @@ int main(void)
         {
             int action;
 
-            if (rand() / RAND_MAX > epsilon)
+            if ((float)rand() / RAND_MAX > epsilon)
             {
-                action = get_best_action(qtable, oldObs);
+                action = get_best_action(qa, oldObs);
             }
             else
             {
-                action = rand() % 4;
+                action = (int)rand() % N_ACTIONS;
             }
 
             step(env, action, &newObs, &terminated, &reward);
 
-            float value = (1 - alpha) * get_state_action_value(qtable, oldObs, action) + alpha * (reward + gamma * get_max_state_value(qtable, newObs));
+            int best_action_qa = get_best_action(qa, newObs);
+            float value1 = get_state_action_value(qa, oldObs, action) + alpha * (reward + gamma * get_state_action_value(qb, newObs, best_action_qa) - get_state_action_value(qa, oldObs, action));
 
-            set_state_action_value(qtable, oldObs, action, value);
+            int best_action_qb = get_best_action(qb, newObs);
+            float value2 = get_state_action_value(qb, oldObs, action) + alpha * (reward + gamma * get_state_action_value(qa, newObs, best_action_qb) - get_state_action_value(qb, oldObs, action));
+
+            set_state_action_value(qa, oldObs, action, value1);
+            set_state_action_value(qb, oldObs, action, value2);
 
             oldObs = newObs;
         }
@@ -116,13 +131,14 @@ int main(void)
 
     putchar('\n');
     printf(":::PLAYING\n");
-    play(env, qtable, 50);
+    play(env, qa, 50);
     putchar('\n');
 
     printf(":::QTABLE\n");
-    display_qtable(qtable);
+    display_qtable(qa);
 
     destroy_env(env);
-    destroy_qtable(qtable);
+    destroy_qtable(qa);
+    destroy_qtable(qb);
     return 0;
 }

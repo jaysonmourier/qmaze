@@ -104,7 +104,7 @@ void display_qtable(struct QTable *qtable)
     {
         for (int j = 0; j < qtable->actions_space; ++j)
         {
-            fprintf(stdout, "%f ", qtable->data[j + i * qtable->actions_space]);
+            fprintf(stdout, "%5f ", qtable->data[j + i * qtable->actions_space]);
         }
         putchar('\n');
     }
