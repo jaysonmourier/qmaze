@@ -17,6 +17,7 @@ struct Env
 enum ACTION {UP, RIGHT, DOWN, LEFT};
 
 struct Env *create_env(int rows, int cols, int playerX, int playerY, int exitX, int exitY);
+struct Env *create_env_from_file(const char *path);
 void destroy_env(struct Env *env);
 int reset_env(struct Env *env);
 void display_env(struct Env *env);

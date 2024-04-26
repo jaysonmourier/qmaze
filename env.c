@@ -7,9 +7,9 @@ static void _updatePlayerPosition(struct Env *env, int newX, int newY)
     if (env == NULL)
         return;
 
-    if((newX < 0) || (newX >= env->cols) ||
-    (newY < 0) || (newY >= env->rows)
-    ) return;
+    if ((newX < 0) || (newX >= env->cols) ||
+        (newY < 0) || (newY >= env->rows))
+        return;
 
     env->data[env->playerY + env->playerX * env->cols] = 0;
     env->data[newY + newX * env->cols] = 1;
@@ -76,6 +76,100 @@ void destroy_env(struct Env *env)
     }
 }
 
+struct Env *create_env_from_file(const char *path)
+{
+    int rows, cols, data;
+    FILE *file = fopen(path, "r");
+    if (file == NULL)
+    {
+        fprintf(stderr, "unable to open the file...\n");
+        return NULL;
+    }
+
+    struct Env *env = (struct Env *)malloc(sizeof(struct Env));
+    if (env == NULL)
+    {
+        fprintf(stderr, "unable to allocate memory for the env...\n");
+        fclose(file);
+        return NULL;
+    }
+
+    if (fscanf(file, "rows=%d\ncols=%d", &rows, &cols) != 2 || rows <= 0 || cols <= 0)
+    {
+        fprintf(stderr, "Incorrect or corrupt file format...\n");
+        fclose(file);
+        destroy_env(env);
+        return NULL;
+    }
+
+    env->data = (int *)calloc(rows * cols, sizeof(int));
+    if (env->data == NULL)
+    {
+        fprintf(stderr, "unable to allocate memory for the env data...\n");
+        fclose(file);
+        destroy_env(env);
+        return NULL;
+    }
+
+    env->initialPlayerX = -1;
+    env->initialPlayerY = -1;
+    env->playerX = -1;
+    env->playerY = -1;
+    env->exitX = -1;
+    env->exitY = -1;
+    env->rows = rows;
+    env->cols = cols;
+
+    int i = 0;
+    int j = 0;
+
+    while (fscanf(file, "%d,", &data) == 1)
+    {
+        switch (data)
+        {
+        case 1:
+            env->initialPlayerX = i;
+            env->initialPlayerY = j;
+            env->playerX = i;
+            env->playerY = j;
+            break;
+        case 2:
+            env->exitX = i;
+            env->exitY = j;
+            break;
+        case 3:
+            break;
+        default:
+            data = 0;
+            break;
+        }
+
+        env->data[j * cols + i] = data;
+        i++;
+        if (i == cols)
+        {
+            i = 0;
+            j++;
+        }
+    }
+
+    fclose(file);
+
+    if ((env->initialPlayerX < 0) ||
+        (env->initialPlayerY < 0) ||
+        (env->playerX < 0) ||
+        (env->playerY < 0) ||
+        (env->exitX < 0) ||
+        (env->exitY < 0))
+    {
+        fprintf(stderr, "incorrect map file...\n");
+        destroy_env(env);
+        return NULL;
+    }
+
+    return env;
+}
+
 int reset_env(struct Env *env)
 {
     if (env == NULL)
@@ -107,6 +201,9 @@ static int _isValidAction(struct Env *env, int x, int y)
         return 0;
 
     if ((x >= env->cols) || (y >= env->rows) || (x < 0) || (y < 0))
+        return 0;
+
+    if (env->data[y + x * env->cols] == 3)
         return 0;
 
     return 1;

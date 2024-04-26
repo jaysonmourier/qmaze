@@ -48,7 +48,9 @@ int main(void)
 {
     srand(time(NULL));
 
-    struct Env *env = create_env(ROWS, COLS, PLAYERX, PLAYERY, EXITX, EXITY);
+    //struct Env *env = create_env(ROWS, COLS, PLAYERX, PLAYERY, EXITX, EXITY);
+
+    struct Env *env = create_env_from_file("map.txt");
 
     if (env == NULL)
     {
@@ -56,7 +58,7 @@ int main(void)
         return 1;
     }
 
-    struct QTable *qa = create_qtable(ROWS * COLS, N_ACTIONS);
+    struct QTable *qa = create_qtable(env->rows * env->cols, N_ACTIONS);
     if (qa == NULL)
     {
         fprintf(stderr, "unable to create qtable...\n");
@@ -64,7 +66,7 @@ int main(void)
         return 1;
     }
 
-    struct QTable *qb = create_qtable(ROWS * COLS, N_ACTIONS);
+    struct QTable *qb = create_qtable(env->rows * env->cols, N_ACTIONS);
     if (qb == NULL)
     {
         fprintf(stderr, "unable to create qtable...\n");
